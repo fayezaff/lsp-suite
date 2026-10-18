@@ -25,7 +25,7 @@
   }[lang];
 
   // The screenshot (images/cad-model.webp) and where each command's drawing sits in it, in image pixels.
-  var IMG_W = 2557, IMG_H = 1256, PHONE_CROP = 1000;
+  var IMG_W = 2557, IMG_H = 1256, PHONE_CROP = [1000, 2300];
   var ABC = [1120, 73, 1570, 428], TOC = [1074, 960, 1657, 1101], SLG = [1769, 924, 2232, 1183];
   var SPOTS = {
     ad: ABC, cc: ABC, db: ABC,
@@ -448,13 +448,18 @@
   // ---------- layout ----------
   var current = null, borrowed = [], pan = 0, panY = 0, scale = 1, baseX = 0, lastFocus = null, phoneScroll = null;
   function phone() { return window.innerWidth < 900 || window.innerHeight < 560; }
+  // Jump without the page's smooth scrolling, so layout() measures the final position.
+  function jumpTo(y) {
+    try { window.scrollTo({ top: y, left: 0, behavior: 'instant' }); }
+    catch (e) { window.scrollTo(0, y); }
+  }
 
   function layout() {
     var w = stage.clientWidth, h = stage.clientHeight;
     if (phone()) {
-      // The left part of the screenshot is empty, so phones skip it.
-      scale = w / (IMG_W - PHONE_CROP);
-      baseX = -PHONE_CROP * scale;
+      // Phones show only the part with drawings (x 1073 to 2228), centred.
+      scale = w / (PHONE_CROP[1] - PHONE_CROP[0]);
+      baseX = -PHONE_CROP[0] * scale;
       pan = 0;
       panY = 0;
       stage.style.setProperty('--model-h', Math.round(IMG_H * scale) + 'px');
@@ -611,7 +616,10 @@
     if (history.replaceState) history.replaceState(null, '', '#' + u.id);
 
     // On a phone, scroll up so the drawing with its highlight shows above the sheet.
-    if (phone() && modal.hidden) { phoneScroll = window.scrollY; window.scrollTo(0, 0); }
+    if (phone()) {
+      if (modal.hidden) phoneScroll = window.scrollY;
+      if (window.scrollY) jumpTo(0);
+    }
     modal.hidden = false;
     cad.classList.add('has-modal');
     mbody.scrollTop = 0;
@@ -637,7 +645,7 @@
     rows.forEach(function (r) { r.row.classList.remove('on'); });
     if (history.replaceState) history.replaceState(null, '', location.pathname + location.search);
     layout();
-    if (phoneScroll !== null) { window.scrollTo(0, phoneScroll); phoneScroll = null; }
+    if (phoneScroll !== null) { jumpTo(phoneScroll); phoneScroll = null; }
     if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
   }
   closeBtn.addEventListener('click', close);
