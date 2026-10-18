@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LSP Suite</title>
+<meta name="description" content="AutoLISP commands for interior drafting in AutoCAD, designed by Fayeza: table of contents, layouts, spec leaders and drawing tools.">
+<link rel="alternate" hreflang="id" href="id.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="cad.css">
+<script>
+// Pick the AutoCAD view before the first paint, unless the one-page view was chosen.
+try { if (new URLSearchParams(location.search).get('view') !== 'doc' && localStorage.getItem('lsp-view') !== 'doc') document.documentElement.classList.add('cad-view'); }
+catch (e) { document.documentElement.classList.add('cad-view'); }
+</script>
+</head>
+<body>
+<div class="layout">
+
+<nav class="side" aria-label="Contents">
+  <span class="label">Sheet index</span>
+  <ul>
+    <li class="group"><a href="#about">Why I built this</a></li>
+    <li class="group"><a href="#start">How to use</a></li>
+    <li class="group"><a href="#quick">Quick tools</a>
+      <ul>
+        <li><a href="#ad">AD</a></li>
+        <li><a href="#cc">CC</a></li>
+        <li><a href="#db">DB</a></li>
+        <li><a href="#dd">DD</a></li>
+        <li><a href="#divv">DIVV / DIVH</a></li>
+        <li><a href="#ds">DS</a></li>
+        <li><a href="#num">NUM</a></li>
+        <li><a href="#pf">PF</a></li>
+        <li><a href="#q">Q</a></li>
+      </ul>
+    </li>
+    <li class="group"><a href="#toc">TOC and layouts</a>
+      <ul>
+        <li><a href="#toc-block">The TOC block</a></li>
+        <li><a href="#toc-workflow">Workflow</a></li>
+        <li><a href="#pt">PT</a></li>
+        <li><a href="#ct">CT / CP / CPP</a></li>
+        <li><a href="#cw">CW / CTB</a></li>
+        <li><a href="#wqb">WQB</a></li>
+        <li><a href="#ws">WS / WSS</a></li>
+      </ul>
+    </li>
+    <li class="group"><a href="#spec">Specs and leaders</a>
+      <ul>
+        <li><a href="#spec-how">How it works</a></li>
+        <li><a href="#spec-setup">Spec codes</a></li>
+        <li><a href="#sl">SL / SLSCALE</a></li>
+        <li><a href="#rr">RR / RZ / RC</a></li>
+        <li><a href="#ee">EE</a></li>
+        <li><a href="#cs">CS</a></li>
+        <li><a href="#sy">SY</a></li>
+      </ul>
+    </li>
+    <li class="group"><a href="#ref">Block reference</a></li>
+  </ul>
+</nav>
+
+<main>
+<!-- id.html is the Indonesian copy of this page. Change both when you edit. -->
+
+<header>
+  <div class="lang-switch" aria-label="Language"><span>EN</span><a href="id.html" hreflang="id" lang="id">ID</a></div>
+  <div class="titleblock">
+    <div class="tb-main">
+      <div class="tb-text">
+      <p class="tb-kicker">AutoLISP for AutoCAD</p>
+      <h1>LSP <span>Suite</span></h1>
+      <p class="lede">AutoLISP commands for interior drafting. They take care of the repetitive parts: numbering sheets, keeping titles in sync with the table of contents, and drawing spec leaders that stay linked to their labels.</p>
+      </div>
+    <svg class="tb-art" viewBox="0 0 410 245" aria-hidden="true" focusable="false">
+      <defs>
+        <filter id="bleed" x="-10%" y="-10%" width="120%" height="120%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="4" result="t"/>
+          <feDisplacementMap in="SourceGraphic" in2="t" scale="10" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+      </defs>
+      <rect class="wash" x="25" y="37" width="164" height="168" filter="url(#bleed)"/>
+      <g class="cab" fill="none" stroke-width="1.5">
+        <rect class="draw" pathLength="1" x="20" y="30" width="170" height="180"/>
+        <path class="draw" pathLength="1" d="M20 45H190M20 195H190" style="--d:.35s"/>
+        <path class="draw" pathLength="1" d="M74 45V195M79 45V195M131 45V195M136 45V195" style="--d:.7s"/>
+      </g>
+      <g class="dimline" style="--d:1s">
+        <path d="M20 214V234M190 214V234M20 228H190M16 232l8-8M186 232l8-8" fill="none"/>
+        <text x="105" y="222" text-anchor="middle">1200</text>
+      </g>
+      <g class="leader" style="--d:1.3s">
+        <circle cx="105" cy="120" r="5"/>
+        <polyline class="la" points="110,120 196,120 196,72 282,72"/>
+        <polyline class="lb" points="110,120 196,120 196,162 282,162"/>
+      </g>
+      <g class="spec" style="--d:1.7s">
+        <g class="spec-move">
+          <rect x="283" y="69" width="6" height="6"/>
+          <text x="294" y="76">Panel fin. HPL</text>
+          <text x="294" y="91">Cloudy Cement</text>
+        </g>
+      </g>
+      <g class="xhair" transform="translate(350 125)">
+        <path d="M-35 0H35M0 -35V35" fill="none"/>
+        <rect x="-4" y="-4" width="8" height="8" fill="none"/>
+      </g>
+    </svg>
+    </div>
+    <div class="tb-cells">
+      <div><span>Designed by</span>Fayeza</div>
+      <div><span>Discipline</span>Interior</div>
+      <div><span>Commands</span>27</div>
+      <div><span>Code</span><a href="#request">On request</a></div>
+    </div>
+  </div>
+</header>
+
+<section id="about">
+  <h2>Why I built this</h2>
+  <p>Interior shop drawings repeat the same small jobs hundreds of times. Every sheet gets a code and a title, typed once in the table of contents and again on the sheet. Every material gets a leader and a description. When a sheet is added or a client changes a material, all of it is redone by hand.</p>
+  <p>These commands are built around one idea: the table of contents in model space is the single source of truth. Sheet codes, layout names, sheet titles and material descriptions are typed once in the TOC, and the commands copy them everywhere else. Spec leaders keep a hidden link between their three parts, so they can be moved, redrawn or swapped across the whole drawing in one step.</p>
+  <p>I'm an interior drafter. I designed each command: what it does, what it asks, and how it fits the way a drawing set gets made. I built them with AI coding agents and use them on real projects.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="start">
+  <h2>How to use</h2>
+  <p>Load the <code>.lsp</code> files with <kbd>APPLOAD</kbd>. Then type a command name in the command line and press <b>Enter</b>, the same way you'd type <kbd>LINE</kbd> or <kbd>COPY</kbd>.</p>
+  <p>Most commands look for blocks and attributes by name. The <a href="#ref">block reference</a> at the bottom lists them.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="quick">
+  <h2>Quick tools</h2>
+  <p>Type the command and answer the prompts.</p>
+
+  <div class="cmd" id="ad">
+    <h3><span class="name">AD</span><span class="what">Number blocks in click order</span></h3>
+    <p>Pick a source block, then click other blocks one at a time. Every number in every attribute goes up by the step times the click count. With step 1, the 1st click gets +1, the 2nd +2, and so on. The target's current value is ignored. Leading zeros are kept, so <code>FURN-01</code> becomes <code>FURN-02</code>.</p>
+    <ol>
+      <li>Step per click. Enter gives 1. Negative works.</li>
+      <li>Pick the source block.</li>
+      <li>Click targets in order. Enter to finish.</li>
+    </ol>
+    <p>Scale attributes (<code>SKALA</code>) are never touched.</p>
+    <figure>
+      <video src="images/ad-demo.mp4" width="950" height="520" autoplay loop muted playsinline></video>
+      <figcaption>Numbering section titles in click order.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="cc">
+    <h3><span class="name">CC</span><span class="what">Copy a drawing title</span></h3>
+    <p>Copies the drawing title from one <code>JUDUL</code> block to others. <code>JUDUL</code> is the title label under each drawing in model space.</p>
+    <ol>
+      <li>Pick the source <code>JUDUL</code> block.</li>
+      <li>Click the targets. Enter to finish.</li>
+    </ol>
+    <figure>
+      <video src="images/cc-demo.mp4" width="1006" height="346" autoplay loop muted playsinline></video>
+      <figcaption>Copying one title onto other <code>JUDUL</code> blocks.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="db">
+    <h3><span class="name">DB</span><span class="what">Frame and title for a new drawing</span></h3>
+    <p>Draws a page frame on the <code>Defpoints</code> layer, which doesn't plot, and puts a <code>JUDUL2</code> title block in its centre. Both are sized for the scale you give: the frame is 340 × 287 times the scale, so 6800 × 5740 at 1:20.</p>
+    <ol>
+      <li>Scale denominator, for example <code>20</code> for 1:20. DB remembers your last answer.</li>
+      <li>Drawing title. Type <code>s</code>, <code>v</code>, <code>d</code> or <code>f</code> for <code>SECTION 1-1</code>, <code>VIEW 1</code>, <code>DETAIL A</code> or <code>FRONT VIEW</code>. Anything else is used exactly as typed. Enter leaves it blank.</li>
+      <li>Click the top-left corner of the frame.</li>
+    </ol>
+    <p>The title block gets the title and the scale, written as <code>1:20</code>.</p>
+    <figure>
+      <video src="images/db-demo.mp4" width="754" height="550" autoplay loop muted playsinline></video>
+      <figcaption>DB placing a frame and title at the chosen scale.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="dd">
+    <h3><span class="name">DD</span><span class="what">Switch the dimension scale</span></h3>
+    <p>Sets the dimension scale (<code>DIMSCALE</code>). Select dimensions before running DD and they switch to the new scale too.</p>
+    <p>Prompt: the scale, for example <code>50</code> for 1:50.</p>
+    <figure>
+      <video src="images/dd-demo.mp4" width="728" height="544" autoplay loop muted playsinline></video>
+      <figcaption>Switching selected dimensions to another scale.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="divv">
+    <h3><span class="name">DIVV / DIVH</span><span class="what">Split a box into equal compartments</span></h3>
+    <p>For cabinet elevations. <kbd>DIVV</kbd> adds vertical dividers, <kbd>DIVH</kbd> adds horizontal shelves. Each divider is drawn as two lines one thickness apart, and every clear opening comes out the same size.</p>
+    <ol>
+      <li>Number of compartments. Default 3.</li>
+      <li>Divider thickness. Default 20.</li>
+      <li>Pick the cabinet outline.</li>
+    </ol>
+    <figure>
+      <video src="images/divv-divh-demo.mp4" width="944" height="566" autoplay loop muted playsinline></video>
+      <figcaption>DIVV adds vertical dividers, then DIVH adds horizontal shelves.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="ds">
+    <h3><span class="name">DS</span><span class="what">Taper lines for a rounded edge</span></h3>
+    <p>Draws parallel lines next to a reference line, with gaps that grow by a ratio. That's the usual way to show a curved surface in elevation.</p>
+    <ol>
+      <li>Pick the reference line.</li>
+      <li>Number of lines. Default 8.</li>
+      <li>Growth ratio. Default 1.35.</li>
+      <li>Distance to the last line. The sign picks the side. Default 100.</li>
+    </ol>
+    <p>Your answers become the defaults for the next run.</p>
+    <figure>
+      <video src="images/ds-demo.mp4" width="886" height="600" autoplay loop muted playsinline></video>
+      <figcaption>Taper lines drawn next to a reference line.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="num">
+    <h3><span class="name">NUM</span><span class="what">Row of numbers</span></h3>
+    <p>Writes numbers as text in a row, left to right, on the current layer and text style.</p>
+    <p>Prompts: how many numbers, start number (Enter gives 1), start point.</p>
+    <figure>
+      <video src="images/num-demo.mp4" width="770" height="552" autoplay loop muted playsinline></video>
+      <figcaption>NUM writing a row of numbers.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="pf">
+    <h3><span class="name">PF</span><span class="what">Place the furniture list</span></h3>
+    <p>Builds the furniture list on the index page of a furniture shop drawing set. Inserts a column of <code>FURNLIST</code> blocks with codes like <code>CA1, CA2...</code> and titles like <code>cabinet 1, cabinet 2...</code>.</p>
+    <p>Prompts: code prefix, title base, start number, end number, first insertion point.</p>
+  </div>
+
+  <div class="cmd" id="q">
+    <h3><span class="name">Q</span><span class="what">Switch layer with one letter</span></h3>
+    <p>Type a letter and that layer becomes current. Select objects before running Q and they move to that layer instead, and the current layer stays as it was.</p>
+    <div class="table-wrap">
+    <table>
+      <tr><th>Letter</th><th>Layer</th></tr>
+      <tr><td><code>D</code></td><td>Walls</td></tr>
+      <tr><td><code>F</code></td><td>Furniture</td></tr>
+      <tr><td><code>N</code></td><td>Notes and leaders</td></tr>
+      <tr><td><code>K</code></td><td>Glass</td></tr>
+      <tr><td><code>U</code></td><td>Door and window frames</td></tr>
+      <tr><td><code>L</code></td><td>Floor</td></tr>
+      <tr><td><code>M</code></td><td>Dimensions</td></tr>
+      <tr><td><code>H</code></td><td>Hatch</td></tr>
+    </table>
+    </div>
+    <figure>
+      <video src="images/q-demo.mp4" width="626" height="314" autoplay loop muted playsinline></video>
+      <figcaption>Switching the current layer, then moving a selected object to another layer.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="toc">
+  <h2>TOC and layouts</h2>
+  <p>These commands treat the table of contents in model space as the master list of sheets. You type each sheet title once in the TOC, and the commands copy it onto the title block of the matching layout.</p>
+
+  <h3 id="toc-block">The TOC block</h3>
+  <p>A TOC is a column of <code>TOC</code> blocks in model space. Each one is a row with two attributes:</p>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Tag</th><th>Holds</th><th>Example</th></tr>
+    <tr><td><code>PAGECODE</code></td><td>Sheet code. Must match the layout tab name (case doesn't matter).</td><td><code>FURN-03</code></td></tr>
+    <tr><td><code>PAGETITLE</code></td><td>Sheet title shown on the title block.</td><td><code>Cabinet 3 elevation</code></td></tr>
+  </table>
+  </div>
+  <p>TOC blocks also hold the spec codes that SL reads. That's covered in <a href="#spec-setup">spec codes</a>.</p>
+
+  <h3 id="toc-workflow">Workflow</h3>
+  <p>Start with one layout per sheet, in the right order.</p>
+  <ol class="steps">
+    <li><b>Place the rows.</b> In model space run <kbd>PT</kbd> with prefix <code>FURN</code>, start 1, end 12. You get <code>FURN-01</code> to <code>FURN-12</code> with empty titles.</li>
+    <li><b>Fill in titles.</b> Double-click the first row and type the title. Then use <kbd>CT</kbd> to copy it as-is, or <kbd>CP</kbd> / <kbd>CPP</kbd> to copy it with the number going up on each click.</li>
+    <li><b>Rename the layouts.</b> Run <kbd>WQB</kbd> with prefix <code>FURN-</code> and start 1. The tabs become <code>FURN-01</code> to <code>FURN-12</code>, matching the TOC.</li>
+    <li><b>Sync each sheet.</b> Set the viewport scale, then run <kbd>WS</kbd> on the layout. It writes the scale and pulls the title from the TOC. For not-to-scale sheets run <kbd>WSS</kbd>.</li>
+    <li><b>Inserting a sheet later.</b> Select the rows after the new one and run <kbd>CTB</kbd> with +1 to shift their codes. Run <kbd>WQB</kbd> again, then <kbd>WS</kbd> on the affected sheets.</li>
+  </ol>
+
+  <div class="cmd" id="pt">
+    <h3><span class="name">PT</span><span class="what">Place TOC rows</span></h3>
+    <p>Inserts a column of <code>TOC</code> blocks with codes <code>FURN-01</code>, <code>FURN-02</code>... and blank titles.</p>
+    <p>Prompts: prefix, start number, end number, first insertion point.</p>
+    <figure>
+      <video src="images/pt-demo.mp4" width="812" height="632" autoplay loop muted playsinline></video>
+      <figcaption>PT placing <code>FURN-01</code> to <code>FURN-12</code>.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="ct">
+    <h3><span class="name">CT / CP / CPP</span><span class="what">Copy a TOC title</span></h3>
+    <p>All three copy <code>PAGETITLE</code> from a source <code>TOC</code> block to the blocks you click next. Pick the source, click targets, Enter to finish. They differ in what happens to numbers in the title:</p>
+    <div class="table-wrap">
+    <table>
+      <tr><th>Command</th><th>Numbers</th><th>Source <code>Level 2 Cabinet 4</code> gives</th></tr>
+      <tr><td><kbd>CT</kbd></td><td>unchanged</td><td><code>Level 2 Cabinet 4</code>, <code>Level 2 Cabinet 4</code>...</td></tr>
+      <tr><td><kbd>CP</kbd></td><td>all +1 per click</td><td><code>Level 3 Cabinet 5</code>, <code>Level 4 Cabinet 6</code>...</td></tr>
+      <tr><td><kbd>CPP</kbd></td><td>all but the first +1 per click</td><td><code>Level 2 Cabinet 5</code>, <code>Level 2 Cabinet 6</code>...</td></tr>
+    </table>
+    </div>
+    <figure>
+      <video src="images/ct-demo.mp4" width="1218" height="676" autoplay loop muted playsinline></video>
+      <figcaption>CT: the title is copied as-is.</figcaption>
+    </figure>
+    <figure>
+      <video src="images/cp-demo.mp4" width="1144" height="670" autoplay loop muted playsinline></video>
+      <figcaption>CP: every number goes up.</figcaption>
+    </figure>
+    <figure>
+      <video src="images/cpp-demo.mp4" width="1106" height="672" autoplay loop muted playsinline></video>
+      <figcaption>CPP: every number except the first goes up.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="cw">
+    <h3><span class="name">CW / CTB</span><span class="what">Change TOC codes</span></h3>
+    <p><kbd>CW</kbd> works like CP but on <code>PAGECODE</code>: pick a source, and each target gets the code +1, +2 and so on. Padding is kept, so <code>FURN-09</code> gives <code>FURN-10</code>.</p>
+    <p><kbd>CTB</kbd> is the batch version. Window-select any number of blocks, give an amount (default 1, negative allowed), and it adds that to the number at the end of each code. <code>FURN-05</code> becomes <code>FURN-06</code>.</p>
+    <figure>
+      <video src="images/cw-demo.mp4" width="1210" height="674" autoplay loop muted playsinline></video>
+      <figcaption>CW: each click gets the next code.</figcaption>
+    </figure>
+    <figure>
+      <video src="images/ctb-demo.mp4" width="1232" height="676" autoplay loop muted playsinline></video>
+      <figcaption>CTB: shifting a selection of codes.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="wqb">
+    <h3><span class="name">WQB</span><span class="what">Rename all layouts</span></h3>
+    <p>Renames every layout tab in tab order to prefix + number, padded to two digits.</p>
+    <p>Prompts: prefix (can be blank), start number.</p>
+    <figure>
+      <video src="images/wqb-demo.mp4" width="502" height="230" autoplay loop muted playsinline></video>
+      <figcaption>WQB renaming <code>Layout1</code> to <code>Layout7</code> as <code>FURN-01</code> to <code>FURN-07</code>.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="ws">
+    <h3><span class="name">WS / WSS</span><span class="what">Sync scale and title onto a sheet</span></h3>
+    <p>Run it on a layout tab. No prompts.</p>
+    <ol>
+      <li><b>Scale.</b> <kbd>WS</kbd> reads the viewport's scale and writes <code>1:50</code> (or whatever it is) into the title block's <code>SCALE</code> attribute. <kbd>WSS</kbd> writes <code>N.T.S</code> instead.</li>
+      <li><b>Title.</b> Finds the <code>TOC</code> block in model space whose <code>PAGECODE</code> matches this tab's name and writes its <code>PAGETITLE</code> into <code>KOPTITLE</code> on the title block.</li>
+    </ol>
+    <figure>
+      <video src="images/ws-wss-demo.mp4" width="506" height="326" autoplay loop muted playsinline></video>
+      <figcaption>WS pulls the title from the TOC and writes the viewport scale. WSS writes <code>N.T.S</code> instead.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="spec">
+  <h2>Specs and leaders</h2>
+
+  <h3 id="spec-how">How a spec leader works</h3>
+  <p>A spec leader is three objects: a small circle on the thing you're labelling, a dashed polyline, and a <code>SPEC</code> block showing the code and description. <kbd>SL</kbd> draws all three and stamps them with a shared hidden ID (XData). That ID lets RR, RZ, RC and EE find the other two when you pick any one of them.</p>
+  <p>Copying a leader copies its ID too, so new leaders always come from <kbd>SL</kbd>.</p>
+
+  <h3 id="spec-setup">Spec codes</h3>
+  <p>SL fills in the description by looking up the spec code in the <code>TOC</code> blocks in model space. Each material gets one <code>TOC</code> row: the code goes in <code>PAGECODE</code>, the full description in <code>PAGETITLE</code>.</p>
+  <div class="table-wrap">
+  <table>
+    <tr><th>PAGECODE</th><th>PAGETITLE</th></tr>
+    <tr><td><code>pclo</code></td><td>Panel fin. HPL Lamitak Mood Cloudy Cement DXP 1387BS</td></tr>
+  </table>
+  </div>
+  <p>Codes are short so they're easy to remember: the item, then the first 3 letters of the material. Cloudy Cement on a panel becomes <code>pclo</code>. They aren't case-sensitive.</p>
+
+  <div class="cmd" id="sl">
+    <h3><span class="name">SL / SLSCALE</span><span class="what">Place a spec leader</span></h3>
+    <ol>
+      <li>Scale denominator, for example <code>15</code> for 1:15. Only asked the first time in a session.</li>
+      <li>Spec code, for example <code>pclo</code>. Press Enter to skip it and get an empty SPEC block.</li>
+      <li>Click a point on the object. That becomes the circle centre.</li>
+      <li>Click the first leader point, then more points. Enter to finish.</li>
+    </ol>
+    <p>The circle, dashes and SPEC block are sized for the scale. <kbd>SLSCALE</kbd> changes the scale when you move to another drawing.</p>
+    <figure>
+      <video src="images/sl-demo.mp4" width="1136" height="654" autoplay loop muted playsinline></video>
+      <figcaption>Placing leaders with codes from the TOC.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="rr">
+    <h3><span class="name">RR / RZ / RC</span><span class="what">Redraw a leader after moving things</span></h3>
+    <p>Move the circle or the SPEC block wherever you like, then pick any part of the group. The old leader is deleted and a clean one is drawn.</p>
+    <ul>
+      <li><kbd>RR</kbd> draws a straight line if the SPEC is level with the circle centre. Otherwise it draws an L: up or down out of the circle, then across into the SPEC.</li>
+      <li><kbd>RZ</kbd> always draws a Z: across out of the circle, a vertical jog halfway, then across into the SPEC.</li>
+      <li><kbd>RC</kbd> draws a C: out of the circle on the side away from the SPEC, a vertical jog, then back across into the SPEC.</li>
+    </ul>
+    <figure>
+      <video src="images/rr-rz-rc-demo.mp4" width="1092" height="538" autoplay loop muted playsinline></video>
+      <figcaption>Moving a SPEC block, then redrawing the leader with RR, RZ and RC.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="ee">
+    <h3><span class="name">EE</span><span class="what">Erase a whole leader group</span></h3>
+    <p>Pick the circle, leader or SPEC block and all three are deleted.</p>
+    <figure>
+      <video src="images/ee-demo.mp4" width="712" height="482" autoplay loop muted playsinline></video>
+      <figcaption>EE erasing a whole group at once.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="cs">
+    <h3><span class="name">CS</span><span class="what">Copy a spec description</span></h3>
+    <p>Copies <code>SPECDESC</code> from one SPEC block to the ones you click. Enter to finish. Only the description changes; the code on the target stays as it was.</p>
+    <figure>
+      <video src="images/cs-demo.mp4" width="1252" height="692" autoplay loop muted playsinline></video>
+      <figcaption>CS copying a description to another SPEC block.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cmd" id="sy">
+    <h3><span class="name">SY</span><span class="what">Swap a spec across the drawing</span></h3>
+    <p>For when the client changes a material. Enter the old code and the new code. SY looks up both descriptions in the TOC, then replaces every SPEC block whose description matches the old one, in model space and on every layout. At the end it tells you how many blocks it changed.</p>
+    <figure>
+      <video src="images/sy-demo.mp4" width="990" height="610" autoplay loop muted playsinline></video>
+      <figcaption>SY swapping one spec for another across the drawing.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="ref">
+  <h2>Block reference</h2>
+  <p>Every block and attribute tag the commands look for.</p>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Block</th><th>Attributes</th><th>Where</th><th>Used by</th></tr>
+    <tr><td><code>TOC</code></td><td><code>PAGECODE</code>, <code>PAGETITLE</code></td><td>Model space</td><td>PT, CT, CP, CPP, CW, CTB, WS, WSS, SL, SY</td></tr>
+    <tr><td>Title block</td><td><code>SCALE</code>, <code>KOPTITLE</code></td><td>Each layout</td><td>WS, WSS</td></tr>
+    <tr><td><code>SPEC</code></td><td><code>PAGECODE</code>, <code>SPECDESC</code></td><td>Model space</td><td>SL, RR, RZ, RC, EE, CS, SY</td></tr>
+    <tr><td><code>JUDUL</code></td><td><code>JUDULGAMBAR</code></td><td>Model space</td><td>CC</td></tr>
+    <tr><td><code>JUDUL2</code></td><td><code>SKALA</code>, <code>JUDULGAMBAR</code></td><td>Model space</td><td>DB</td></tr>
+    <tr><td><code>FURNLIST</code></td><td><code>FURNCODE</code>, <code>FURNTITLE</code></td><td>Model space</td><td>PF</td></tr>
+  </table>
+  </div>
+</section>
+
+<aside class="ask" id="request">
+  <strong>Want the code?</strong>
+  <p>The commands aren't public, but I share them on request. <a href="https://www.linkedin.com/in/fayezaff/">Message me on LinkedIn</a>.</p>
+</aside>
+
+<footer class="titlestrip">
+  <div><span>Title</span>LSP Suite</div>
+  <div><span>Designed by</span>Fayeza</div>
+  <div><span>Scale</span>N.T.S</div>
+  <div><span>Sheet</span>1 of 1</div>
+  <div><span>Last updated</span><time id="updated" datetime="2026-10-15">15 Oct 2026</time></div>
+</footer>
+
+</main>
+</div>
+<script src="cad.js"></script>
+<script src="site.js"></script>
+</body>
+</html>

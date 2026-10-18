@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 36" preserveAspectRatio="none">
+  <!-- a small watercolor swatch behind command names: ragged edges, pigment pooling at the rim -->
+  <filter id="bleed" x="-10%" y="-20%" width="120%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.09 0.18" numOctaves="3" seed="11" result="t"/>
+    <feDisplacementMap in="SourceGraphic" in2="t" scale="6" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <g filter="url(#bleed)">
+    <rect x="4" y="5" width="112" height="26" rx="3" fill="#7199c4" fill-opacity="0.30" stroke="#7199c4" stroke-opacity="0.22" stroke-width="1.5"/>
+  </g>
+</svg>
